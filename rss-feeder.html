@@ -1,0 +1,98 @@
+<style>
+    /* assign Grid to row class  */
+          .row {
+              /* assign gap size to var */
+              --gap: 10px;
+              gap: var(--gap);
+              display: grid;
+              /* Clamp method to optimize the grid for all screen size */
+              grid-template-columns: repeat(auto-fit,
+                      minmax(clamp(20% - 10px, 250px, 100%),
+                          1fr));
+              padding: 10px;
+              margin: auto;
+          }
+          /* style column div */
+          .row>div {
+              background-color: white;
+              padding: 30px 10px;
+              font-size: 20px;
+          }
+          /* Verticaly center text  */
+          .center {
+              margin: auto;
+              text-align: center;
+              background-color: #f1f3f4;
+              min-height: 585px;
+              position: relative;
+          }
+          p {
+              margin: 0px;
+          }
+          a {
+              color: black;
+              font-size: 18px;
+              text-decoration: none;
+          }
+          .center h3{
+              padding: 0px 10px;
+          }
+          audio {
+              width: 100%;
+              position: absolute;
+              bottom: 0px;
+              display: block;
+          }
+          .player-img {
+              width: 100%;
+          }
+   </style>
+
+
+   <!--incert the xml data this div-->
+   <div class="row" id="row">
+   </div>
+
+
+   <script>
+    const RSS_URL = `https://feeds.libsyn.com/173168/rss`;
+      fetch(RSS_URL)
+          .then(response => response.text())
+          .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+          .then(data => {
+              console.log(data);
+              const items = data.querySelectorAll("item");
+              const elements = data.getElementsByTagName("enclosure");
+              const image = data.getElementsByTagNameNS('*', 'image');
+              let html = ``;
+              let i = 0;
+              let j = 1;
+              items.forEach(el => {       
+                  var date = el.querySelector("pubDate").innerHTML;
+                  date = date.slice(5, 16);
+                      if(i < 3){
+                      html += `
+                              <div>
+                                  <div class="center">
+                                      <img class="player-img" src="`+ image.item(j).getAttribute('href') +`" alt="">
+                                      <h3>
+                                          <a href="${el.querySelector("link").innerHTML.replace(/^<\!\[CDATA\[|\]\]>$/g,'')}" target="_blank" rel="noopener">
+                                          ${el.querySelector("title").innerHTML}
+                                          </a>
+                                      </h3>
+                                      <p>`+ date
+                                          +`</p>
+                                      <audio controls>
+                                          <source src="`+ elements.item(i).getAttribute('url') +`" type="audio/mpeg">
+                                          Your browser does not support the audio element.
+                                      </audio>
+                                      <p>${el.querySelector("link").innerHTML}</p>
+                                  </div>
+                              </div>
+                          `;
+                      }
+                  i++;                
+              });
+              document.getElementById("row").innerHTML = html;
+          });
+   </script>
